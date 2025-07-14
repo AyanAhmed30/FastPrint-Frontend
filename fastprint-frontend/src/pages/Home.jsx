@@ -5,7 +5,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleQuoteClick = () => {
-    navigate('/pricing-calculator');
+    navigate('/calculator/printbook');
   };
 
   return (

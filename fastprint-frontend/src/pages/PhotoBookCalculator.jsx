@@ -1,0 +1,234 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+import PerfectBoundImg from '../assets/images/perfectbound.png';
+import Book1 from '../assets/images/book1.png';
+import Book2 from '../assets/images/Group.png';
+import CoilBoundImg from '../assets/images/coilbound.png';
+import SaddleImg from '../assets/images/saddle.png';
+import CaseWrap from '../assets/images/casewrap.png';
+import LinenWrap from '../assets/images/linenwrap.png';
+import StandardBlackandWhite from '../assets/images/int1.png';
+import PremiumBlackandWhite from '../assets/images/in2.png';
+import StandardColor from '../assets/images/in3.png';
+import PremiumColor from '../assets/images/int4.png';
+import Creamuncoated from '../assets/images/pp1.jpg';
+import Whiteuncoated from '../assets/images/pp2.jpg';
+import Whitecoated from '../assets/images/pp3.jpg';
+import Whitecoatedd from '../assets/images/pp4.jpg';
+import Glossy from '../assets/images/glossy.png';
+import Matty from '../assets/images/matty.png';
+import RightImage from '../assets/images/right.png';
+
+import Header from '../components/Header';
+import Carousel from '../components/Carousel';
+import PricingBanner from '../components/PricingBanner';
+import Footer from '../components/Footer';
+import RedirectButton from '../components/RedirectButton';
+
+const API_BASE = 'http://localhost:8000';
+
+const OptionField = ({ title, name, options, images, form, handleChange }) => {
+  // Remove duplicates based on option name
+  const uniqueOptions = Array.from(
+    new Map(options.map(opt => [opt.name, opt])).values()
+  );
+
+  return (
+    <fieldset>
+      <legend className="font-semibold text-gray-700 mb-3">{title}</legend>
+      <div className="flex flex-wrap gap-6">
+        {uniqueOptions.map(opt => (
+          <label
+            key={opt.id}
+            className={`cursor-pointer flex flex-col items-center w-24 p-2 border rounded transition ${
+              form[name] === opt.id ? 'border-blue-600 bg-blue-100' : 'border-gray-300'
+            }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt.id}
+              checked={form[name] === opt.id}
+              onChange={handleChange}
+              className="mb-2"
+            />
+            {images[opt.name] && (
+              <img src={images[opt.name]} alt={opt.name} className="w-16 h-16 object-contain mb-1" />
+            )}
+            <span className="text-center text-sm">{opt.name}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+};
+
+const InfoRow = ({ label, value }) => (
+  <div className="flex justify-between border-b border-gray-200 pb-1 text-gray-700">
+    <span className="font-semibold">{label}</span>
+    <span>{value}</span>
+  </div>
+);
+
+const PhotoBookCalculator = () => {
+  const [dropdowns, setDropdowns] = useState({});
+  const [form, setForm] = useState({
+    trim_size_id: '',
+    page_count: '',
+    binding_id: '',
+    interior_color_id: '',
+    paper_type_id: '',
+    cover_finish_id: '',
+    spine_id: '',
+    exterior_color_id: '',
+    foil_stamping_id: '',
+    screen_stamping_id: '',
+    quantity: 1,
+  });
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [calculating, setCalculating] = useState(false);
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/photobook/dropdowns/`);
+        setDropdowns(res.data);
+      } catch (err) {
+        alert("Failed to load dropdowns.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDropdowns();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    let val = value;
+    if (type === 'number') val = value === '' ? '' : Number(value);
+    setForm(prev => ({ ...prev, [name]: val }));
+    setResult(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setCalculating(true);
+      const res = await axios.post(`${API_BASE}/api/photobook/calculate/`, form);
+      setResult(res.data);
+    } catch (err) {
+      alert("Calculation failed.");
+      console.error(err);
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const getNameById = (list, id) => list?.find(opt => opt.id === id)?.name || '-';
+
+  const bindingImages = {
+    "Perfect Bound": PerfectBoundImg,
+    "Coil Bound": CoilBoundImg,
+    "Saddle Stitch": SaddleImg,
+    "Case Wrap": CaseWrap,
+    "Linen Wrap": LinenWrap,
+  };
+  const interiorColorImages = {
+    "Standard Black & White": StandardBlackandWhite,
+    "Premium Black & White": PremiumBlackandWhite,
+    "Standard Color": StandardColor,
+    "Premium Color": PremiumColor,
+  };
+  const paperTypeImages = {
+    "60# Cream-Uncoated": Creamuncoated,
+    "60# White-Uncoated": Whiteuncoated,
+    "80# White-Coated": Whitecoated,
+    "100# White-Coated": Whitecoatedd,
+  };
+  const coverFinishImages = {
+    "Gloss": Glossy,
+    "Matte": Matty,
+  };
+
+  const interiorColors = dropdowns.interior_colors || [];
+  const paperTypes = dropdowns.paper_types || [];
+  const coverFinishes = dropdowns.cover_finishes || [];
+  const trimSizes = dropdowns.trim_sizes || [];
+  const bindings = dropdowns.bindings || [];
+
+  return (
+    <>
+      <Header />
+      <PricingBanner />
+      <Carousel />
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
+        {loading ? (
+          <p className="text-blue-700">Loading options...</p>
+        ) : (
+          <div className="flex w-full max-w-6xl gap-8">
+            <form onSubmit={handleSubmit} className="flex-1 bg-white p-8 rounded-lg shadow-lg flex flex-col gap-6">
+              <div className="flex flex-col gap-4 px-4 py-4 mb-8" style={{ background: 'linear-gradient(90deg, #016AB3 16.41%, #0096CD 60.03%, #00AEDC 87.93%)', border: '1px solid #E5E5E5', borderRadius: '20px' }}>
+                <h3 style={{ color: 'white' }} className="text-lg font-semibold">Book Size & Page Count</h3>
+                <div className="flex gap-4 items-end">
+                  <div className="w-1/2">
+                    <label className="text-sm text-white mb-1 block">Trim Size</label>
+                    <select name="trim_size_id" value={form.trim_size_id} onChange={handleChange} className="w-full border border-gray-300 rounded p-2 h-12" style={{ backgroundColor: 'white' }} required>
+                      <option value="">Select Trim Size</option>
+                      {trimSizes.map((ts) => (
+                        <option key={ts.id} value={ts.id}>{ts.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="w-1/2">
+                    <label className="text-sm text-white mb-1 block">Page Count (max 200)</label>
+                    <input type="number" name="page_count" value={form.page_count} onChange={handleChange} min="1" max="200" className="w-full border border-gray-300 rounded p-2 h-12" style={{ backgroundColor: 'white' }} placeholder="Enter Page Count" required />
+                  </div>
+                </div>
+              </div>
+              <OptionField title="Binding Type" name="binding_id" options={bindings} images={bindingImages} form={form} handleChange={handleChange} />
+              <OptionField title="Interior Color" name="interior_color_id" options={interiorColors} images={interiorColorImages} form={form} handleChange={handleChange} />
+              <OptionField title="Paper Type" name="paper_type_id" options={paperTypes} images={paperTypeImages} form={form} handleChange={handleChange} />
+              <OptionField title="Cover Finish" name="cover_finish_id" options={coverFinishes} images={coverFinishImages} form={form} handleChange={handleChange} />
+              <div className="flex items-end gap-4 mt-4">
+                <div className="flex-1">
+                  <label className="block font-semibold mb-1 text-gray-700">Quantity</label>
+                  <input type="number" name="quantity" value={form.quantity} onChange={handleChange} min={1} required className="w-full border rounded p-2" />
+                </div>
+                <button type="submit" disabled={calculating} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded transition">
+                  {calculating ? 'Calculating...' : 'Calculate'}
+                </button>
+              </div>
+              {result && (
+                <div className="mt-6 p-4 bg-blue-100 border border-blue-300 rounded text-blue-900">
+                  <h3 className="font-semibold mb-2">💰 Result</h3>
+                  <p><strong>Cost per Book:</strong> ${Number(result.cost_per_book).toFixed(2)}</p>
+                  <p><strong>Total Cost:</strong> ${Number(result.total_cost).toFixed(2)}</p>
+                </div>
+              )}
+            </form>
+            <aside className="w-96 bg-white rounded-lg shadow-lg p-6 flex flex-col">
+              <img src={RightImage} alt="Book" className="w-full h-48 object-cover rounded mb-6" />
+              <h2 className="text-2xl font-bold text-blue-900 mb-4 text-center">High-Quality Photo Printing</h2>
+              <div className="space-y-4 flex-grow">
+                <InfoRow label="Trim Size" value={getNameById(trimSizes, form.trim_size_id)} />
+                <InfoRow label="Page Count" value={form.page_count || '-'} />
+                <InfoRow label="Binding Type" value={getNameById(bindings, form.binding_id)} />
+                <InfoRow label="Interior Color" value={getNameById(interiorColors, form.interior_color_id)} />
+                <InfoRow label="Paper Type" value={getNameById(paperTypes, form.paper_type_id)} />
+                <InfoRow label="Cover Finish" value={getNameById(coverFinishes, form.cover_finish_id)} />
+                <InfoRow label="Quantity" value={form.quantity} />
+                <RedirectButton/>
+              </div>
+            </aside>
+          </div>
+        )}
+      </div>
+      <Footer/>
+    </>
+  );
+};
+
+export default PhotoBookCalculator;
