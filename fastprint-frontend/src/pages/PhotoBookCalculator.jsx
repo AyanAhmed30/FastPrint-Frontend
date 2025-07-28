@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import QuantityEstimateDropdown from '../components/QuantityEstimateDropdown';
 
 import PerfectBoundImg from '../assets/images/perfectbound.png';
 import Book1 from '../assets/images/book1.png';
@@ -25,14 +26,33 @@ import Carousel from '../components/Carousel';
 import PricingBanner from '../components/PricingBanner';
 import Footer from '../components/Footer';
 import RedirectButton from '../components/RedirectButton';
+import BASE_URL from '../services/baseURL';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = `${BASE_URL}`;
+const getDiscountInfo = (qty) => {
+  if (qty >= 1000) return { percent: 15, price: 17.93 };
+  if (qty >= 500) return { percent: 10, price: 18.98 };
+  if (qty >= 100) return { percent: 5, price: 20.04 };
+  return null;
+};
 
 const OptionField = ({ title, name, options, images, form, handleChange }) => {
   // Remove duplicates based on option name
   const uniqueOptions = Array.from(
     new Map(options.map(opt => [opt.name, opt])).values()
   );
+
+  const handleOptionClick = (optionId) => {
+    // Create a synthetic event object
+    const syntheticEvent = {
+      target: {
+        name: name,
+        value: optionId,
+        type: 'radio'
+      }
+    };
+    handleChange(syntheticEvent);
+  };
 
   return (
     <fieldset>
@@ -41,22 +61,40 @@ const OptionField = ({ title, name, options, images, form, handleChange }) => {
         {uniqueOptions.map(opt => (
           <label
             key={opt.id}
-            className={`cursor-pointer flex flex-col items-center w-24 p-2 border rounded transition ${
-              form[name] === opt.id ? 'border-blue-600 bg-blue-100' : 'border-gray-300'
+            className={`cursor-pointer flex flex-col items-center w-24 p-2 border-2 rounded transition-all duration-200 ${
+              form[name] === opt.id 
+                ? 'border-blue-600 bg-blue-50 shadow-md' 
+                : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'
             }`}
+            onClick={() => handleOptionClick(opt.id)}
           >
             <input
               type="radio"
               name={name}
               value={opt.id}
               checked={form[name] === opt.id}
-              onChange={handleChange}
-              className="mb-2"
+              onChange={() => {}} // Controlled by label click
+              className="mb-2 accent-blue-600"
+              style={{ display: 'none' }} // Hide the default radio button
             />
+            {/* Custom radio button indicator */}
+            <div className={`w-4 h-4 rounded-full border-2 mb-2 flex items-center justify-center ${
+              form[name] === opt.id 
+                ? 'border-blue-600 bg-blue-600' 
+                : 'border-gray-400'
+            }`}>
+              {form[name] === opt.id && (
+                <div className="w-2 h-2 rounded-full bg-white"></div>
+              )}
+            </div>
             {images[opt.name] && (
               <img src={images[opt.name]} alt={opt.name} className="w-16 h-16 object-contain mb-1" />
             )}
-            <span className="text-center text-sm">{opt.name}</span>
+            <span className={`text-center text-sm ${
+              form[name] === opt.id ? 'text-blue-700 font-semibold' : 'text-gray-700'
+            }`}>
+              {opt.name}
+            </span>
           </label>
         ))}
       </div>
@@ -65,9 +103,9 @@ const OptionField = ({ title, name, options, images, form, handleChange }) => {
 };
 
 const InfoRow = ({ label, value }) => (
-  <div className="flex justify-between border-b border-gray-200 pb-1 text-gray-700">
-    <span className="font-semibold">{label}</span>
-    <span>{value}</span>
+  <div className="flex justify-between border-b border-gray-200 pb-2 mb-2">
+    <span className="font-semibold text-gray-700">{label}:</span>
+    <span className="text-gray-600 font-medium">{value}</span>
   </div>
 );
 
@@ -95,6 +133,7 @@ const PhotoBookCalculator = () => {
       try {
         const res = await axios.get(`${API_BASE}/api/photobook/dropdowns/`);
         setDropdowns(res.data);
+        console.log('Dropdowns loaded:', res.data); // Debug log
       } catch (err) {
         alert("Failed to load dropdowns.");
         console.error(err);
@@ -108,8 +147,22 @@ const PhotoBookCalculator = () => {
   const handleChange = (e) => {
     const { name, value, type } = e.target;
     let val = value;
-    if (type === 'number') val = value === '' ? '' : Number(value);
-    setForm(prev => ({ ...prev, [name]: val }));
+    
+    // Convert to number for specific fields that expect numeric IDs
+    if (type === 'number') {
+      val = value === '' ? '' : Number(value);
+    } else if (name.includes('_id') && value !== '') {
+      // Convert ID fields to numbers to match the dropdown option IDs
+      val = Number(value);
+    }
+    
+    console.log(`Updating ${name} to:`, val, 'Type:', typeof val); // Debug log
+    
+    setForm(prev => {
+      const newForm = { ...prev, [name]: val };
+      console.log('New form state:', newForm); // Debug log
+      return newForm;
+    });
     setResult(null);
   };
 
@@ -127,7 +180,11 @@ const PhotoBookCalculator = () => {
     }
   };
 
-  const getNameById = (list, id) => list?.find(opt => opt.id === id)?.name || '-';
+  const getNameById = (list, id) => {
+    if (!list || !id) return '-';
+    const found = list.find(opt => opt.id === id);
+    return found ? found.name : '-';
+  };
 
   const bindingImages = {
     "Perfect Bound": PerfectBoundImg,
@@ -166,7 +223,9 @@ const PhotoBookCalculator = () => {
       <Carousel />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
         {loading ? (
-          <p className="text-blue-700">Loading options...</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-blue-700 text-lg">Loading options...</div>
+          </div>
         ) : (
           <div className="flex w-full max-w-6xl gap-8">
             <form onSubmit={handleSubmit} className="flex-1 bg-white p-8 rounded-lg shadow-lg flex flex-col gap-6">
@@ -175,7 +234,14 @@ const PhotoBookCalculator = () => {
                 <div className="flex gap-4 items-end">
                   <div className="w-1/2">
                     <label className="text-sm text-white mb-1 block">Trim Size</label>
-                    <select name="trim_size_id" value={form.trim_size_id} onChange={handleChange} className="w-full border border-gray-300 rounded p-2 h-12" style={{ backgroundColor: 'white' }} required>
+                    <select 
+                      name="trim_size_id" 
+                      value={form.trim_size_id} 
+                      onChange={handleChange} 
+                      className="w-full border border-gray-300 rounded p-2 h-12" 
+                      style={{ backgroundColor: 'white' }} 
+                      required
+                    >
                       <option value="">Select Trim Size</option>
                       {trimSizes.map((ts) => (
                         <option key={ts.id} value={ts.id}>{ts.name}</option>
@@ -184,49 +250,91 @@ const PhotoBookCalculator = () => {
                   </div>
                   <div className="w-1/2">
                     <label className="text-sm text-white mb-1 block">Page Count (max 200)</label>
-                    <input type="number" name="page_count" value={form.page_count} onChange={handleChange} min="1" max="200" className="w-full border border-gray-300 rounded p-2 h-12" style={{ backgroundColor: 'white' }} placeholder="Enter Page Count" required />
+                    <input 
+                      type="number" 
+                      name="page_count" 
+                      value={form.page_count} 
+                      onChange={handleChange} 
+                      min="1" 
+                      max="200" 
+                      className="w-full border border-gray-300 rounded p-2 h-12" 
+                      style={{ backgroundColor: 'white' }} 
+                      placeholder="Enter Page Count" 
+                      required 
+                    />
                   </div>
                 </div>
               </div>
-              <OptionField title="Binding Type" name="binding_id" options={bindings} images={bindingImages} form={form} handleChange={handleChange} />
-              <OptionField title="Interior Color" name="interior_color_id" options={interiorColors} images={interiorColorImages} form={form} handleChange={handleChange} />
-              <OptionField title="Paper Type" name="paper_type_id" options={paperTypes} images={paperTypeImages} form={form} handleChange={handleChange} />
-              <OptionField title="Cover Finish" name="cover_finish_id" options={coverFinishes} images={coverFinishImages} form={form} handleChange={handleChange} />
-              <div className="flex items-end gap-4 mt-4">
-                <div className="flex-1">
-                  <label className="block font-semibold mb-1 text-gray-700">Quantity</label>
-                  <input type="number" name="quantity" value={form.quantity} onChange={handleChange} min={1} required className="w-full border rounded p-2" />
-                </div>
-                <button type="submit" disabled={calculating} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded transition">
-                  {calculating ? 'Calculating...' : 'Calculate'}
-                </button>
-              </div>
-              {result && (
-                <div className="mt-6 p-4 bg-blue-100 border border-blue-300 rounded text-blue-900">
-                  <h3 className="font-semibold mb-2">💰 Result</h3>
-                  <p><strong>Cost per Book:</strong> ${Number(result.cost_per_book).toFixed(2)}</p>
-                  <p><strong>Total Cost:</strong> ${Number(result.total_cost).toFixed(2)}</p>
-                </div>
-              )}
+              
+              <OptionField 
+                title="Binding Type" 
+                name="binding_id" 
+                options={bindings} 
+                images={bindingImages} 
+                form={form} 
+                handleChange={handleChange} 
+              />
+              
+              <OptionField 
+                title="Interior Color" 
+                name="interior_color_id" 
+                options={interiorColors} 
+                images={interiorColorImages} 
+                form={form} 
+                handleChange={handleChange} 
+              />
+              
+              <OptionField 
+                title="Paper Type" 
+                name="paper_type_id" 
+                options={paperTypes} 
+                images={paperTypeImages} 
+                form={form} 
+                handleChange={handleChange} 
+              />
+              
+              <OptionField 
+                title="Cover Finish" 
+                name="cover_finish_id" 
+                options={coverFinishes} 
+                images={coverFinishImages} 
+                form={form} 
+                handleChange={handleChange} 
+              />
+              
+              <QuantityEstimateDropdown
+                form={form}
+                handleChange={handleChange}
+                handleSubmit={handleSubmit}
+                result={result}
+                getDiscountInfo={getDiscountInfo}
+                calculating={calculating}
+                loading={loading}
+              />
             </form>
+            
             <aside className="w-96 bg-white rounded-lg shadow-lg p-6 flex flex-col">
               <img src={RightImage} alt="Book" className="w-full h-48 object-cover rounded mb-6" />
-              <h2 className="text-2xl font-bold text-blue-900 mb-4 text-center">High-Quality Photo Printing</h2>
-              <div className="space-y-4 flex-grow">
+              <h2 className="text-2xl font-bold text-blue-900 mb-6 text-center">High-Quality Photo Printing</h2>
+              
+              <div className="space-y-3 flex-grow">
                 <InfoRow label="Trim Size" value={getNameById(trimSizes, form.trim_size_id)} />
                 <InfoRow label="Page Count" value={form.page_count || '-'} />
                 <InfoRow label="Binding Type" value={getNameById(bindings, form.binding_id)} />
                 <InfoRow label="Interior Color" value={getNameById(interiorColors, form.interior_color_id)} />
                 <InfoRow label="Paper Type" value={getNameById(paperTypes, form.paper_type_id)} />
                 <InfoRow label="Cover Finish" value={getNameById(coverFinishes, form.cover_finish_id)} />
-                <InfoRow label="Quantity" value={form.quantity} />
-                <RedirectButton/>
+                <InfoRow label="Quantity" value={form.quantity || '-'} />
+                
+                <div className="pt-4 border-t border-gray-200">
+                  <RedirectButton />
+                </div>
               </div>
             </aside>
           </div>
         )}
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

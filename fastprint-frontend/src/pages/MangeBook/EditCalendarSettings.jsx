@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Save, Search, ChevronDown, Calendar, BookOpen, Palette, FileText, Layers, X, DollarSign } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const EditCalendarSettings = () => {
   const [loading, setLoading] = useState(true);

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
+import BASE_URL from "../services/baseURL"; // Import centralized base URL
+
 
 const CoverExpert = () => {
   const navigate = useNavigate();
@@ -20,18 +22,15 @@ const CoverExpert = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [projectData, setProjectData] = useState(null);
   const [designForm, setDesignForm] = useState(null);
-  const [dropdowns, setDropdowns] = useState({}); // Add this to store dropdown data
+  const [dropdowns, setDropdowns] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Add function to fetch dropdown data
   const fetchDropdownData = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/api/books/dropdown-data/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.get(`${BASE_URL}api/book/dropdown-data/`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setDropdowns(response.data);
     } catch (error) {
@@ -51,16 +50,11 @@ const CoverExpert = () => {
         setErrors({ general: "Error loading saved project data. Please start over." });
       }
     }
-    
-    // Fetch dropdown data when component mounts
-    if (token) {
-      fetchDropdownData();
-    }
+    if (token) fetchDropdownData();
   }, [token]);
 
   const validateForm = () => {
     const newErrors = {};
-    
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email format";
@@ -70,15 +64,8 @@ const CoverExpert = () => {
     if (!selectedFile) newErrors.file = "PDF file is required";
     else if (selectedFile.type !== "application/pdf") newErrors.file = "Only PDF files are allowed";
     else if (selectedFile.size > 50 * 1024 * 1024) newErrors.file = "File size must be less than 50MB";
-    
-    if (!projectData || !designForm) {
-      newErrors.general = "Missing project data. Please complete previous steps first.";
-    }
-    
-    if (!token) {
-      newErrors.general = "Authentication required. Please log in.";
-    }
-
+    if (!projectData || !designForm) newErrors.general = "Missing project data. Please complete previous steps first.";
+    if (!token) newErrors.general = "Authentication required. Please log in.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,88 +73,57 @@ const CoverExpert = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: "" }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setSelectedFile(file);
-    
-    if (errors.file) {
-      setErrors(prev => ({ ...prev, file: "" }));
-    }
+    if (errors.file) setErrors(prev => ({ ...prev, file: "" }));
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+    setIsSubmitting(true);
+    setUploadProgress(0);
 
-  if (!validateForm()) return;
+    try {
+      const apiData = new FormData();
 
-  setIsSubmitting(true);
-  setUploadProgress(0);
+      const bindings = JSON.parse(localStorage.getItem("bindings") || "[]");
+      const coverFinishes = JSON.parse(localStorage.getItem("cover_finishes") || "[]");
+      const interiorColors = JSON.parse(localStorage.getItem("interior_colors") || "[]");
+      const paperTypes = JSON.parse(localStorage.getItem("paper_types") || "[]");
+      const trimSizes = JSON.parse(localStorage.getItem("trim_sizes") || "[]");
+      const designForm = JSON.parse(localStorage.getItem("designForm") || "{}");
+      const projectData = JSON.parse(localStorage.getItem("projectData") || "{}");
 
-  try {
-    const apiData = new FormData();
+      const binding = bindings.find(b => String(b.id) === String(designForm.binding_id))?.name || '';
+      const coverFinish = coverFinishes.find(cf => String(cf.id) === String(designForm.cover_finish_id))?.name || '';
+      const interiorColor = interiorColors.find(ic => String(ic.id) === String(designForm.interior_color_id))?.name || '';
+      const paperType = paperTypes.find(pt => String(pt.id) === String(designForm.paper_type_id))?.name || '';
+      const trimSize = trimSizes.find(ts => String(ts.id) === String(designForm.trim_size_id))?.name || '';
 
-    // ✅ Load saved dropdowns and design form
-    const bindings = JSON.parse(localStorage.getItem("bindings") || "[]");
-    const coverFinishes = JSON.parse(localStorage.getItem("cover_finishes") || "[]");
-    const interiorColors = JSON.parse(localStorage.getItem("interior_colors") || "[]");
-    const paperTypes = JSON.parse(localStorage.getItem("paper_types") || "[]");
-    const trimSizes = JSON.parse(localStorage.getItem("trim_sizes") || "[]");
-    const designForm = JSON.parse(localStorage.getItem("designForm") || "{}");
-    const projectData = JSON.parse(localStorage.getItem("projectData") || "{}");
+      apiData.append("title", projectData.projectTitle || "");
+      apiData.append("category", projectData.category || "");
+      apiData.append("language", projectData.language || "");
+      apiData.append("page_count", designForm.page_count || "");
+      apiData.append("binding_type", binding);
+      apiData.append("cover_finish", coverFinish);
+      apiData.append("interior_color", interiorColor);
+      apiData.append("paper_type", paperType);
+      apiData.append("trim_size", trimSize);
+      apiData.append("pdf_file", selectedFile);
 
-    // ✅ Convert IDs to corresponding names
-    const binding = bindings.find(b => String(b.id) === String(designForm.binding_id))?.name || '';
-    const coverFinish = coverFinishes.find(cf => String(cf.id) === String(designForm.cover_finish_id))?.name || '';
-    const interiorColor = interiorColors.find(ic => String(ic.id) === String(designForm.interior_color_id))?.name || '';
-    const paperType = paperTypes.find(pt => String(pt.id) === String(designForm.paper_type_id))?.name || '';
-    const trimSize = trimSizes.find(ts => String(ts.id) === String(designForm.trim_size_id))?.name || '';
+      apiData.append("cover_description", formData.description || "");
+      apiData.append("contact_name", formData.name || "");
+      apiData.append("contact_email", formData.email || "");
+      apiData.append("book_title", formData.bookTitle || "");
+      apiData.append("book_genre", formData.bookGenre || "");
+      apiData.append("is_cover_expert", "true");
 
-    // ✅ Debug log
-    console.log("Converting IDs to names:", {
-      binding_id: designForm.binding_id,
-      binding_name: binding,
-      cover_finish_id: designForm.cover_finish_id,
-      cover_finish_name: coverFinish,
-      interior_color_id: designForm.interior_color_id,
-      interior_color_name: interiorColor,
-      paper_type_id: designForm.paper_type_id,
-      paper_type_name: paperType,
-      trim_size_id: designForm.trim_size_id,
-      trim_size_name: trimSize,
-    });
-
-    // ✅ Append all required fields to FormData
-    apiData.append("title", projectData.projectTitle || "");
-    apiData.append("category", projectData.category || "");
-    apiData.append("language", projectData.language || "");
-    apiData.append("page_count", designForm.page_count || "");
-    apiData.append("binding_type", binding); // as string ✅
-    apiData.append("cover_finish", coverFinish);
-    apiData.append("interior_color", interiorColor);
-    apiData.append("paper_type", paperType);
-    apiData.append("trim_size", trimSize);
-    apiData.append("pdf_file", selectedFile);
-
-    // Optional: additional form data
-    apiData.append("cover_description", formData.description || "");
-    apiData.append("contact_name", formData.name || "");
-    apiData.append("contact_email", formData.email || "");
-    apiData.append("book_title", formData.bookTitle || "");
-    apiData.append("book_genre", formData.bookGenre || "");
-    apiData.append("is_cover_expert", "true");
-
-    // ✅ Send request to backend
-    const response = await axios.post(
-      "http://localhost:8000/api/books/upload-book/",
-      apiData,
-      {
+      const response = await axios.post(`${BASE_URL}api/book/upload-book/`, apiData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -176,37 +132,30 @@ const handleSubmit = async (e) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           setUploadProgress(percentCompleted);
         },
+      });
+
+      if (response.data?.status === "success") {
+        localStorage.removeItem("projectData");
+        localStorage.removeItem("designForm");
+        localStorage.removeItem("bindings");
+        localStorage.removeItem("cover_finishes");
+        localStorage.removeItem("interior_colors");
+        localStorage.removeItem("paper_types");
+        localStorage.removeItem("trim_sizes");
+        alert("Project submitted successfully! Our cover design expert will contact you soon.");
+        navigate("/shop");
+      } else {
+        throw new Error(response.data?.message || "Submission failed");
       }
-    );
-
-    if (response.data?.status === "success") {
-      // ✅ Cleanup after successful submission
-      localStorage.removeItem("projectData");
-      localStorage.removeItem("designForm");
-      localStorage.removeItem("bindings");
-      localStorage.removeItem("cover_finishes");
-      localStorage.removeItem("interior_colors");
-      localStorage.removeItem("paper_types");
-      localStorage.removeItem("trim_sizes");
-
-      alert("Project submitted successfully! Our cover design expert will contact you soon.");
-      navigate("/shop");
-    } else {
-      throw new Error(response.data?.message || "Submission failed");
+    } catch (error) {
+      console.error("Upload error:", error);
+      const errorMessage = error.response?.data?.message || error.message || "Upload failed. Please try again.";
+      setErrors({ general: errorMessage });
+    } finally {
+      setIsSubmitting(false);
+      setUploadProgress(0);
     }
-  } catch (error) {
-    console.error("Upload error:", error);
-    const errorMessage =
-      error.response?.data?.message || error.message || "Upload failed. Please try again.";
-    setErrors({ general: errorMessage });
-  } finally {
-    setIsSubmitting(false);
-    setUploadProgress(0);
-  }
-};
-
-
-
+  };
 
   return (
     <>
@@ -272,9 +221,7 @@ const handleSubmit = async (e) => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className={`w-full border rounded-md p-3 text-sm ${
-                  errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm ${errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 placeholder="Enter your full name"
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
@@ -288,9 +235,7 @@ const handleSubmit = async (e) => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className={`w-full border rounded-md p-3 text-sm ${
-                  errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 placeholder="Enter your email address"
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -304,9 +249,7 @@ const handleSubmit = async (e) => {
                 value={formData.bookTitle}
                 onChange={handleChange}
                 required
-                className={`w-full border rounded-md p-3 text-sm ${
-                  errors.bookTitle ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm ${errors.bookTitle ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 placeholder="Enter your book title"
               />
               {errors.bookTitle && <p className="text-red-500 text-sm mt-1">{errors.bookTitle}</p>}
@@ -320,9 +263,7 @@ const handleSubmit = async (e) => {
                 value={formData.bookGenre}
                 onChange={handleChange}
                 required
-                className={`w-full border rounded-md p-3 text-sm ${
-                  errors.bookGenre ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm ${errors.bookGenre ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 placeholder="e.g., Fiction, Non-fiction, Romance, Thriller"
               />
               {errors.bookGenre && <p className="text-red-500 text-sm mt-1">{errors.bookGenre}</p>}
@@ -330,7 +271,7 @@ const handleSubmit = async (e) => {
 
             <div>
               <label className="text-black font-semibold block mb-1">
-                Cover Design Requirements *
+                Cover Design Requirements also mention your Binding Type*
               </label>
               <textarea
                 name="description"
@@ -338,24 +279,20 @@ const handleSubmit = async (e) => {
                 onChange={handleChange}
                 rows={5}
                 required
-                className={`w-full border rounded-md p-3 text-sm resize-none ${
-                  errors.description ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm resize-none ${errors.description ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                 placeholder="Please describe the type of cover design you want. Include details about style, colors, themes, or any specific requirements..."
               ></textarea>
               {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
             </div>
 
             <div>
-              <label className="text-black font-semibold block mb-1">Please Aagain Upload Your Book (PDF) *</label>
+              <label className="text-black font-semibold block mb-1">Please Again Upload Your Book (PDF) *</label>
               <input
                 type="file"
                 accept="application/pdf"
                 onChange={handleFileChange}
                 required
-                className={`w-full border rounded-md p-3 text-sm ${
-                  errors.file ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                }`}
+                className={`w-full border rounded-md p-3 text-sm ${errors.file ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
               />
               {errors.file && <p className="text-red-500 text-sm mt-1">{errors.file}</p>}
               {selectedFile && (
@@ -382,17 +319,14 @@ const handleSubmit = async (e) => {
               type="submit"
               disabled={isSubmitting}
               className={`w-full py-3 text-white text-[16px] font-medium rounded-full shadow-md transition-all ${
-                isSubmitting
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#F8C20A] to-[#EE831E] hover:shadow-lg'
+                isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-gradient-to-r from-[#F8C20A] to-[#EE831E] hover:shadow-lg"
               }`}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit to Cover Expert'}
+              {isSubmitting ? "Submitting..." : "Submit to Cover Expert"}
             </button>
           </form>
         </div>
       </div>
-
       <Footer />
     </>
   );

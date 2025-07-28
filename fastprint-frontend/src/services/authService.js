@@ -1,7 +1,8 @@
 import axios from 'axios';
+import BASE_URL from './baseURL'; // Adjust the relative path accordingly
 
-// ✅ Django backend base URL
-const API_BASE = 'http://localhost:8000/api/users';
+// Base API path for user related endpoints
+const API_BASE = `${BASE_URL}api/users`;
 
 /**
  * Register a new user.

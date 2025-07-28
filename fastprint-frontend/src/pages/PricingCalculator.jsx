@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import BASE_URL from '../services/baseURL';
 
 const PricingCalculator = () => {
   const [options, setOptions] = useState({});
@@ -20,7 +21,7 @@ const PricingCalculator = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/pricing/options/')
+    axios.get(`${BASE_URL}/api/pricing/options/`)
       .then(res => setOptions(res.data))
       .catch(err => console.error('Error loading options', err));
   }, []);

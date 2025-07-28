@@ -34,6 +34,7 @@ import PrintShop from './pages/PrintShop';
 import About from './pages/About';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Orders from './pages/Orders'
 
 // Calculators
 import PrintBookCalculator from './pages/PrintBookCalculator';
@@ -60,7 +61,14 @@ import PrintBookEditSettings from './pages/MangeBook/PrintBookEditSettings';
 import YearBookEditSettings from './pages/MangeBook/YearBookEditSettings';
 import MagazineEditSettings from './pages/MangeBook/MagazineEditSettings';
 import ThesisEditSettings from './pages/MangeBook/ThesisEditSettings';
+import ManageOrders from './pages/ManageOrders';
+import OrderInfo from './pages/OrderInfo';
+import ManageShipping from './pages/ManageShipping';
+import AdminPaymentSettings from './pages/AdminPaymentSettings';
 
+//payment getway
+import PaymentSuccess from "./pages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentCancel";
 
 const AppRoutes = () => {
   return (
@@ -74,6 +82,8 @@ const AppRoutes = () => {
       <Route path="/cover-expert" element={<CoverExpert />} /> {/* ✅ Add this */}
       <Route path="/payment" element={<Payment />} /> {/* ✅ Add this */}
       <Route path="/admin" element={<AdminDashboard />} /> {/* ✅ Add this */}
+      <Route path="/orders" element={<Orders />} /> {/* ✅ Add this */}
+
 
 
       {/*ADMIN PAGES */}
@@ -86,10 +96,10 @@ const AppRoutes = () => {
       <Route path="/admin/books/yearbook/edit" element={<YearBookEditSettings />} />
       <Route path="/admin/books/magazinebook/edit" element={<MagazineEditSettings />} />
       <Route path="/admin/books/thesis/edit" element={<ThesisEditSettings />} />
-
-
-
-
+      <Route path="/admin/orders" element={<ManageOrders />} />
+      <Route path="/admin/payment" element={<AdminPaymentSettings />} />
+      <Route path="/admin/order-info" element={<OrderInfo />} />
+      <Route path="/admin/shipping" element={<ManageShipping />} />
 
       <Route path="/pricing" element={<Pricing />} />
       <Route path="/pricing-calculator" element={<PricingCalculator />} />
@@ -131,6 +141,13 @@ const AppRoutes = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/reset-password/:uidb64/:token" element={<ResetPasswordConfirm />} /> {/* ✅ added */}
       <Route path="/verify-email/:uidb64/:token" element={<VerifyEmail />} /> {/* ✅ added */}
+
+      {/*;Paymet Getway */}
+      <Route path="/success" element={<PaymentSuccess />} />
+      <Route path="/cancel" element={<PaymentCancel />} />
+
+
+
 
 
     </Routes>

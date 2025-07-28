@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import BASE_URL from "../services/baseURL";
 
 // Images
 import Image1 from "../assets/images/startproject1.png";

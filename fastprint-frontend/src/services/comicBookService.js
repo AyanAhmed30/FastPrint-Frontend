@@ -1,7 +1,8 @@
 // services/comicBookService.js
 import axios from "axios";
+import BASE_URL from "./baseURL"; // import your centralized base URL
 
-const API_BASE = "http://localhost:8000/api/comicbook"; // adjust if needed
+const API_BASE = `${BASE_URL}api/comicbook`; // use centralized base URL
 
 export const fetchComicBindings = () =>
   axios.get(`${API_BASE}/bindings/`).then((res) => res.data);

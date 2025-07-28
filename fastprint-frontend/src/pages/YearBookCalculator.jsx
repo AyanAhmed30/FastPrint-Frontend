@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import QuantityEstimateDropdown from '../components/QuantityEstimateDropdown';
 
 import PerfectBoundImg from '../assets/images/perfectbound.png';
-
 import CoilBoundImg from '../assets/images/coilbound.png';
 import SaddleImg from '../assets/images/saddle.png';
 import CaseWrap from '../assets/images/casewrap.png';
@@ -24,8 +24,15 @@ import Carousel from '../components/Carousel';
 import PricingBanner from '../components/PricingBanner';
 import Footer from '../components/Footer';
 import RedirectButton from '../components/RedirectButton';
+import BASE_URL from '../services/baseURL';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = `${BASE_URL}`;
+const getDiscountInfo = (qty) => {
+  if (qty >= 1000) return { percent: 15, price: 17.93 };
+  if (qty >= 500) return { percent: 10, price: 18.98 };
+  if (qty >= 100) return { percent: 5, price: 20.04 };
+  return null;
+};
 
 const OptionField = ({ title, name, options, images, form, handleChange }) => (
   <fieldset>
@@ -149,23 +156,38 @@ const YearBookCalculator = () => {
     "Linen Wrap": LinenWrap,
   };
 
+  // Updated interior color images mapping with all possible variations
   const interiorColorImages = {
     "Standard Black & White": StandardBlackandWhite,
+    "Standard Black and White": StandardBlackandWhite,
     "Premium Black & White": PremiumBlackandWhite,
+    "Premium Black and White": PremiumBlackandWhite,
+    "Premium Black & white": PremiumBlackandWhite, // Fixed case variation
+    "Premium Black and white": PremiumBlackandWhite,
     "Standard Color": StandardColor,
     "Premium Color": PremiumColor,
   };
 
+  // Updated paper type images mapping with all possible variations
   const paperTypeImages = {
     "60# Cream-Uncoated": Creamuncoated,
-    "60# White-Uncoated": Whiteuncoated,
+    
+    "60# White-uncoated": Whiteuncoated,
+ 
+    "70# White-Uncoated": Whitecoatedd, // Using same image for 70# as 60#
+   
     "80# White-Coated": Whitecoated,
+    "80# White Coated": Whitecoated,
     "100# White-Coated": Whitecoatedd,
+    "100# White Coated": Whitecoatedd,
   };
 
   const coverFinishImages = {
     "Gloss": Glossy,
+    "Glossy": Glossy,
     "Matte": Matty,
+    "Matt": Matty,
+    "Matty": Matty,
   };
 
   const interiorColors = dropdowns.interior_colors || [];
@@ -176,8 +198,7 @@ const YearBookCalculator = () => {
   return (
     <>
       <Header />
-     <PricingBanner/>
-
+      <PricingBanner/>
       <Carousel />
 
       <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
@@ -251,25 +272,16 @@ const YearBookCalculator = () => {
             <OptionField title="Paper Type" name="paper_type_id" options={paperTypes} images={paperTypeImages} form={form} handleChange={handleChange} />
             <OptionField title="Cover Finish" name="cover_finish_id" options={coverFinishes} images={coverFinishImages} form={form} handleChange={handleChange} />
 
-            {/* Quantity & Button */}
-            <div className="flex items-end gap-4 mt-4">
-              <div className="flex-1">
-                <label className="block font-semibold mb-1 text-gray-700">Quantity</label>
-                <input type="number" name="quantity" value={form.quantity} onChange={handleChange} min={1} required className="w-full border rounded p-2" />
-              </div>
-              <button type="submit" disabled={calculating} className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded transition">
-                {calculating ? 'Calculating...' : 'Calculate'}
-              </button>
-            </div>
+            <QuantityEstimateDropdown
+              form={form}
+              handleChange={handleChange}
+              handleSubmit={handleSubmit}
+              result={result}
+              getDiscountInfo={getDiscountInfo}
+              calculating={calculating}
+              loading={false}
+            />
 
-            {/* Result */}
-            {result && (
-              <div className="mt-6 p-4 bg-blue-100 border border-blue-300 rounded text-blue-900">
-                <h3 className="font-semibold mb-2">💰 Result</h3>
-                <p><strong>Cost per Book:</strong> ${Number(result.cost_per_book).toFixed(2)}</p>
-                <p><strong>Total Cost:</strong> ${Number(result.total_cost).toFixed(2)}</p>
-              </div>
-            )}
           </form>
 
           {/* Summary */}
@@ -284,7 +296,7 @@ const YearBookCalculator = () => {
               <InfoRow label="Paper Type" value={getNameById(paperTypes, form.paper_type_id)} />
               <InfoRow label="Cover Finish" value={getNameById(coverFinishes, form.cover_finish_id)} />
               <InfoRow label="Quantity" value={form.quantity} />
-               <RedirectButton/>
+              <RedirectButton/>
             </div>
           </aside>
         </div>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import QuantityEstimateDropdown from '../components/QuantityEstimateDropdown';
+
 
 import Header from '../components/Header';
 import Carousel from '../components/Carousel';
@@ -16,8 +18,15 @@ import Book2 from '../assets/images/Group.png';
 import PricingBanner from '../components/PricingBanner';
 import Footer from '../components/Footer';
 import RedirectButton from '../components/RedirectButton';
+import BASE_URL from '../services/baseURL';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE =`${BASE_URL}` ;
+const getDiscountInfo = (qty) => {
+  if (qty >= 1000) return { percent: 15, price: 17.93 };
+  if (qty >= 500) return { percent: 10, price: 18.98 };
+  if (qty >= 100) return { percent: 5, price: 20.04 };
+  return null;
+};
 
 const imageMap = {
   'Wire O': WireO,
@@ -154,37 +163,16 @@ const CalendarCalculator = () => {
                   handleChange={handleChange}
                 />
 
-                <div className="flex items-end gap-4 mt-4">
-                  <div className="flex-1">
-                    <label className="block font-semibold mb-1 text-gray-700">Quantity</label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={form.quantity}
-                      onChange={handleChange}
-                      min={1}
-                      required
-                      className="w-full border rounded p-2"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={calculating}
-                    className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded transition"
-                  >
-                    {calculating ? 'Calculating...' : 'Calculate'}
-                  </button>
-                </div>
+               <QuantityEstimateDropdown
+  form={form}
+  handleChange={handleChange}
+  handleSubmit={handleSubmit}
+  result={result}
+  getDiscountInfo={getDiscountInfo}
+  calculating={calculating}
+  loading={loading}
+/>
 
-                {result && (
-                  <div className="mt-6 p-4 bg-blue-100 border border-blue-300 rounded text-blue-900">
-                    <h3 className="font-semibold mb-2">💰 Result</h3>
-                    <p><strong>Cost per Calendar:</strong> ${Number(result.cost_per_book).toFixed(2)}</p>
-                    <p><strong>Total Cost:</strong> ${Number(result.total_cost).toFixed(2)}</p>
-                    <p><strong>Discount:</strong> ${Number(result.discounted_amount).toFixed(2)}</p>
-                    <p><strong>Amount After Discount:</strong> ${Number(result.amount_after_discount).toFixed(2)}</p>
-                  </div>
-                )}
               </form>
 
               <aside className="w-96 bg-white rounded-lg shadow-lg p-6 flex flex-col">
