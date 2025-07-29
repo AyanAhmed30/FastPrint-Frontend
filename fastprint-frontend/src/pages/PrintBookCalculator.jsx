@@ -66,7 +66,7 @@ const PrintBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/calculator/dropdowns/`);
+        const res = await axios.get(`${API_BASE}api/calculator/dropdowns/`);
         setDropdowns(res.data);
         setAvailableOptions({
           bindings: res.data.bindings || [],
@@ -90,7 +90,7 @@ const PrintBookCalculator = () => {
       if (filtersShouldBeActive) {
         try {
           setLoadingAvailableOptions(true);
-          const res = await axios.get(`${API_BASE}/api/calculator/available-options/`, {
+          const res = await axios.get(`${API_BASE}api/calculator/available-options/`, {
             params: {
               trim_size_id: form.trim_size_id,
               page_count: form.page_count,
@@ -157,7 +157,7 @@ const PrintBookCalculator = () => {
 
     try {
       setCalculating(true);
-      const res = await axios.post(`${API_BASE}/api/calculator/calculate/`, payload);
+      const res = await axios.post(`${API_BASE}api/calculator/calculate/`, payload);
       setResult(res.data);
     } catch (err) {
       console.error("Error details:", err.response?.data || err);

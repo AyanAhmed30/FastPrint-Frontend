@@ -21,7 +21,7 @@ const PricingCalculator = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/api/pricing/options/`)
+    axios.get(`${BASE_URL}api/pricing/options/`)
       .then(res => setOptions(res.data))
       .catch(err => console.error('Error loading options', err));
   }, []);
@@ -39,7 +39,7 @@ const PricingCalculator = () => {
     setResult(null);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/pricing/calculate/', formData);
+      const res = await axios.post(`${BASE_URL}api/pricing/calculate/`, formData);
       setResult(res.data);
     } catch (err) {
       console.error('Error calculating price', err);

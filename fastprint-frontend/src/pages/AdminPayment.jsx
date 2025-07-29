@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import BASE_URL from '../services/baseURL';
 
 const AdminPayment = () => {
   const [payments, setPayments] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/api/payment/admin-payments/')
+    axios.get(`${BASE_URL}api/payment/admin-payments/`)
       .then(res => setPayments(res.data))
       .catch(err => console.error('Failed to fetch payments:', err));
   }, []);

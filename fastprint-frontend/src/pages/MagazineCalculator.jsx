@@ -191,7 +191,7 @@ const MagazineCalculator = () => {
   const [calculating, setCalculating] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API_BASE}/api/magazine/dropdowns/`)
+    axios.get(`${API_BASE}api/magazine/dropdowns/`)
       .then((res) => {
         setDropdowns(res.data);
         setAllBindings(res.data.binding_types || []);
@@ -203,7 +203,7 @@ const MagazineCalculator = () => {
   useEffect(() => {
     const { trim_size_id, page_count } = form;
     if (trim_size_id && page_count) {
-      axios.get(`${API_BASE}/api/magazine/bindings/`, { params: { trim_size_id, page_count } })
+      axios.get(`${API_BASE}api/magazine/bindings/`, { params: { trim_size_id, page_count } })
         .then((res) => setBindings(res.data))
         .catch(() => alert('Failed to load bindings.'));
     } else {
@@ -237,7 +237,7 @@ const MagazineCalculator = () => {
     e.preventDefault();
     setCalculating(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/magazine/calculate/`, form);
+      const res = await axios.post(`${API_BASE}api/magazine/calculate/`, form);
       setResult(res.data);
     } catch {
       alert('Calculation failed.');

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import BASE_URL from "../services/baseURL";
 const ShippingEstimate = () => {
   const [address, setAddress] = useState({
     country: "",
@@ -39,7 +39,7 @@ const ShippingEstimate = () => {
     setSelectedOption(null);
 
     try {
-      const res = await axios.post("http://localhost:8000/api/shipping-rate/", {
+      const res = await axios.post(`${BASE_URL}api/shipping-rate/`, {
         ...address,
         account_type: "individual", // always send individual
       });

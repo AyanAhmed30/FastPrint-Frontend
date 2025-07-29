@@ -96,7 +96,7 @@ const YearBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/yearbook/dropdowns/`);
+        const res = await axios.get(`${API_BASE}api/yearbook/dropdowns/`);
         setDropdowns(res.data);
       } catch (err) {
         alert("Failed to load dropdowns.");
@@ -111,7 +111,7 @@ const YearBookCalculator = () => {
   useEffect(() => {
     const { trim_size_id, page_count } = form;
     if (trim_size_id && page_count) {
-      axios.get(`${API_BASE}/api/yearbook/bindings/`, { params: { trim_size_id, page_count } })
+      axios.get(`${API_BASE}api/yearbook/bindings/`, { params: { trim_size_id, page_count } })
         .then(res => setBindings(res.data))
         .catch(() => alert("Failed to load bindings."));
     } else {
@@ -136,7 +136,7 @@ const YearBookCalculator = () => {
     e.preventDefault();
     setCalculating(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/yearbook/calculate/`, form);
+      const res = await axios.post(`${API_BASE}api/yearbook/calculate/`, form);
       setResult(res.data);
     } catch (err) {
       alert("Calculation failed.");

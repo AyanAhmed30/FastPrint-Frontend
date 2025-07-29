@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const MagazineEditSettings = () => {
   const [dropdowns, setDropdowns] = useState({});
@@ -19,7 +20,7 @@ const MagazineEditSettings = () => {
 
   const fetchDropdowns = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/magazine/dropdowns/");
+      const res = await axios.get(`${BASE_URL}api/magazine/dropdowns/`);
       setDropdowns(res.data);
     } catch (err) {
       alert("Failed to load settings");
@@ -52,7 +53,7 @@ const MagazineEditSettings = () => {
           binding: `binding-type/${update.id}/update/`,
         };
 
-        await axios.put(`http://localhost:8000/api/magazine/${urlMap[update.type]}`, {
+        await axios.put(`${BASE_URL}api/magazine/${urlMap[update.type]}`, {
           [update.field]: update.value,
         });
       }

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const EditPhotoBookSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -50,7 +51,7 @@ const EditPhotoBookSettings = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8000/api/photobook/dropdowns/");
+      const res = await axios.get(`${BASE_URL}api/photobook/dropdowns/`);
       setData(res.data);
     } catch (err) {
       alert("❌ Failed to load photobook settings.");
@@ -95,7 +96,7 @@ const EditPhotoBookSettings = () => {
           screen_stampings: `screen-stamping/${update.id}/update/`,
         };
 
-        await axios.put(`http://localhost:8000/api/photobook/${urlMap[update.type]}`, {
+        await axios.put(`${BASE_URL}api/photobook/${urlMap[update.type]}`, {
           [update.field]: update.value,
         });
       }

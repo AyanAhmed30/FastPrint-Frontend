@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";  // Import Sidebar
 import AdminHeader from "../components/AdminHeader";
+import BASE_URL from "../services/baseURL";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -17,7 +18,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     const token = localStorage.getItem("accessToken");
     try {
-      const response = await axios.get("http://localhost:8000/api/users/admin/users/", {
+      const response = await axios.get(`${BASE_URL}api/users/admin/users/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(response.data.data || []);
@@ -55,7 +56,7 @@ const AdminDashboard = () => {
 
     const token = localStorage.getItem("accessToken");
     try {
-      await axios.delete(`http://localhost:8000/api/users/admin/users/${userId}/delete/`, {
+      await axios.delete(`${BASE_URL}api/users/admin/users/${userId}/delete/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       // Remove user from state after successful delete

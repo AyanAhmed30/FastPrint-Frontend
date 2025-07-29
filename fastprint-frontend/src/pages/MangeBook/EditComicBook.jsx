@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Save, Pencil, Search, Filter, ChevronDown, BookOpen, Palette, FileText, Layers, X, TrendingUp, DollarSign } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const EditComicBook = () => {
   const [loading, setLoading] = useState(true);
@@ -40,10 +41,10 @@ const EditComicBook = () => {
     setLoading(true);
     try {
       // Simulate API calls - replace with actual axios calls
-      const response = await fetch("http://localhost:8000/api/comicbook/dropdowns/");
+      const response = await fetch(`${BASE_URL}api/comicbook/dropdowns/`);
       const dropdowns = await response.json();
       
-      const bindingsResponse = await fetch("http://localhost:8000/api/comicbook/comic/all-bindings/");
+      const bindingsResponse = await fetch(`${BASE_URL}api/comicbook/comic/all-bindings/`);
       const allBindings = await bindingsResponse.json();
 
       setBindings(allBindings || []);
@@ -83,7 +84,7 @@ const EditComicBook = () => {
         const { type, id, field, value } = changedValues[key];
         
         // Replace axios.put with fetch
-        const response = await fetch(`http://localhost:8000/api/comicbook/${urlMap[type]}/${id}/update/`, {
+        const response = await fetch(`${BASE_URL}api/comicbook/${urlMap[type]}/${id}/update/`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const ThesisEditSettings = () => {
     const [dropdowns, setDropdowns] = useState({});
@@ -24,7 +25,7 @@ const ThesisEditSettings = () => {
 
     const fetchDropdowns = async () => {
         try {
-            const res = await axios.get("http://localhost:8000/api/pricing/options/");
+            const res = await axios.get(`${BASE_URL}api/pricing/options/`);
             setDropdowns(res.data);
         } catch (err) {
             alert("Failed to load settings");
@@ -50,7 +51,7 @@ const ThesisEditSettings = () => {
 
         try {
             for (let update of updates) {
-                await axios.put(`http://localhost:8000/api/pricing/${update.type}/${update.id}/update/`, {
+                await axios.put(`${BASE_URL}api/pricing/${update.type}/${update.id}/update/`, {
                     [update.field]: update.value,
                 });
             }

@@ -16,6 +16,7 @@
     Package,
     ExternalLink
   } from "lucide-react";
+  import BASE_URL from "../services/baseURL";
 
   const ManageOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -28,7 +29,7 @@
     const fetchOrders = async () => {
       const token = localStorage.getItem("accessToken");
       try {
-        const res = await axios.get("http://localhost:8000/api/book/all-orders/", {
+        const res = await axios.get(`${BASE_URL}api/book/all-orders/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOrders(res.data.data || []);

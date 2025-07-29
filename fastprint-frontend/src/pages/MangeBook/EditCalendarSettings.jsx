@@ -33,7 +33,7 @@ const EditCalendarSettings = () => {
     setLoading(true);
     try {
       // Simulate API call - replace with actual fetch
-      const response = await fetch("http://localhost:8000/api/calender/dropdowns/");
+      const response = await fetch(`${BASE_URL}api/calender/dropdowns/`);
       const data = await response.json();
       
       setBindings(data.bindings || []);
@@ -71,7 +71,7 @@ const EditCalendarSettings = () => {
           cover: `cover-finish/${update.id}/update/`,
         };
 
-        const response = await fetch(`http://localhost:8000/api/calender/${urlMap[update.type]}`, {
+        const response = await fetch(`${BASE_URL}api/calender/${urlMap[update.type]}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

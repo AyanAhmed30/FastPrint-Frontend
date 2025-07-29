@@ -3,6 +3,7 @@ import axios from "axios";
 import { Save, BookOpen, Layers, FileText, Palette, Archive } from "lucide-react";
 import AdminHeader from "../../components/AdminHeader";
 import Footer from "../../components/Footer";
+import BASE_URL from "../../services/baseURL";
 
 const PrintBookEditSettings = () => {
   const [dropdowns, setDropdowns] = useState({});
@@ -10,9 +11,10 @@ const PrintBookEditSettings = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
+
   const fetchDropdowns = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/calculator/dropdowns/");
+      const res = await axios.get(`${BASE_URL}api/calculator/dropdowns/`);
       setDropdowns(res.data);
     } catch (err) {
       alert("Failed to load settings");
@@ -46,7 +48,7 @@ const PrintBookEditSettings = () => {
           binding: `binding-type/${update.id}/update/`,
         };
 
-        await axios.put(`http://localhost:8000/api/calculator/${urlMap[update.type]}`, {
+        await axios.put(`${BASE_URL}api/calculator/${urlMap[update.type]}`, {
           [update.field]: update.value,
         });
       }

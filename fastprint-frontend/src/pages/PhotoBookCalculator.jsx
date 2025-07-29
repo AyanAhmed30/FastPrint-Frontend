@@ -131,7 +131,7 @@ const PhotoBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/photobook/dropdowns/`);
+        const res = await axios.get(`${API_BASE}api/photobook/dropdowns/`);
         setDropdowns(res.data);
         console.log('Dropdowns loaded:', res.data); // Debug log
       } catch (err) {
@@ -170,7 +170,7 @@ const PhotoBookCalculator = () => {
     e.preventDefault();
     try {
       setCalculating(true);
-      const res = await axios.post(`${API_BASE}/api/photobook/calculate/`, form);
+      const res = await axios.post(`${API_BASE}api/photobook/calculate/`, form);
       setResult(res.data);
     } catch (err) {
       alert("Calculation failed.");

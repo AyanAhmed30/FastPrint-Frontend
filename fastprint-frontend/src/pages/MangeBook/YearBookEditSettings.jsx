@@ -3,6 +3,7 @@ import axios from "axios";
 import { Save, BookOpen, Layers, FileText, Palette } from "lucide-react";
 import Footer from "../../components/Footer";
 import AdminHeader from "../../components/AdminHeader";
+import BASE_URL from "../../services/baseURL";
 
 const YearBookEditSettings = () => {
   const [dropdowns, setDropdowns] = useState({});
@@ -12,7 +13,7 @@ const YearBookEditSettings = () => {
 
   const fetchDropdowns = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/yearbook/dropdowns/");
+      const res = await axios.get(`${BASE_URL}api/yearbook/dropdowns/`);
       setDropdowns(res.data);
     } catch (err) {
       alert("Failed to load settings");
@@ -45,7 +46,7 @@ const YearBookEditSettings = () => {
           binding: `binding-type/${update.id}/update/`, // ✅ Added
         };
 
-        await axios.put(`http://localhost:8000/api/yearbook/${urlMap[update.type]}`, {
+        await axios.put(`${BASE_URL}api/yearbook/${urlMap[update.type]}`, {
           [update.field]: update.value,
         });
       }
