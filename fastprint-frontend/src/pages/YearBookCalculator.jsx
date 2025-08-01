@@ -96,7 +96,8 @@ const YearBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}api/yearbook/dropdowns/`);
+const safeURL = `${API_BASE}api/yearbook/dropdowns/`.replace(/([^:]\/)\/+/g, "$1");
+const res = await axios.get(safeURL);
         setDropdowns(res.data);
       } catch (err) {
         alert("Failed to load dropdowns.");
@@ -108,16 +109,18 @@ const YearBookCalculator = () => {
     fetchDropdowns();
   }, []);
 
-  useEffect(() => {
-    const { trim_size_id, page_count } = form;
-    if (trim_size_id && page_count) {
-      axios.get(`${API_BASE}api/yearbook/bindings/`, { params: { trim_size_id, page_count } })
-        .then(res => setBindings(res.data))
-        .catch(() => alert("Failed to load bindings."));
-    } else {
-      setBindings([]);
-    }
-  }, [form.trim_size_id, form.page_count]);
+useEffect(() => {
+  const { trim_size_id, page_count } = form;
+  if (trim_size_id && page_count) {
+    const safeURL = `${API_BASE}api/yearbook/bindings/`.replace(/([^:]\/)\/+/g, "$1");
+    axios.get(safeURL, { params: { trim_size_id, page_count } })
+      .then(res => setBindings(res.data))
+      .catch(() => alert("Failed to load bindings."));
+  } else {
+    setBindings([]);
+  }
+}, [form.trim_size_id, form.page_count]);
+
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -132,19 +135,21 @@ const YearBookCalculator = () => {
     setResult(null);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setCalculating(true);
-    try {
-      const res = await axios.post(`${API_BASE}api/yearbook/calculate/`, form);
-      setResult(res.data);
-    } catch (err) {
-      alert("Calculation failed.");
-      console.error(err);
-    } finally {
-      setCalculating(false);
-    }
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setCalculating(true);
+  try {
+    const safeURL = `${API_BASE}api/yearbook/calculate/`.replace(/([^:]\/)\/+/g, "$1");
+    const res = await axios.post(safeURL, form);
+    setResult(res.data);
+  } catch (err) {
+    alert("Calculation failed.");
+    console.error(err);
+  } finally {
+    setCalculating(false);
+  }
+};
+
 
   const getNameById = (list, id) => list?.find(opt => opt.id === id)?.name || '-';
 
