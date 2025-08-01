@@ -85,13 +85,15 @@ const CalendarCalculator = () => {
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get(`${API_BASE}api/calender/dropdowns/`)
-      .then(res => setDropdowns(res.data))
-      .catch(() => alert('Failed to load dropdowns'))
-      .finally(() => setLoading(false));
-  }, []);
+useEffect(() => {
+  const safeURL = `${API_BASE}api/calender/dropdowns/`.replace(/([^:]\/)\/+/g, "$1");
+  axios
+    .get(safeURL)
+    .then(res => setDropdowns(res.data))
+    .catch(() => alert('Failed to load dropdowns'))
+    .finally(() => setLoading(false));
+}, []);
+
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -99,18 +101,21 @@ const CalendarCalculator = () => {
     setResult(null);
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setCalculating(true);
-    try {
-      const res = await axios.post(`${API_BASE}api/calender/calculate/`, form);
-      setResult(res.data);
-    } catch (err) {
-      alert('Calculation failed');
-    } finally {
-      setCalculating(false);
-    }
-  };
+const handleSubmit = async e => {
+  e.preventDefault();
+  setCalculating(true);
+  try {
+    const safeURL = `${API_BASE}api/calender/calculate/`.replace(/([^:]\/)\/+/g, "$1");
+    const res = await axios.post(safeURL, form);
+    setResult(res.data);
+  } catch (err) {
+    alert('Calculation failed');
+    console.error(err);
+  } finally {
+    setCalculating(false);
+  }
+};
+
 
   const getNameById = (list, id) => list?.find(opt => opt.id === id)?.name || '-';
 
