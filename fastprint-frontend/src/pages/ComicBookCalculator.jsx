@@ -109,7 +109,7 @@ const ComicBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/comicbook/dropdowns/`);
+        const res = await axios.get(`${API_BASE}api/comicbook/dropdowns/`);
         setDropdowns(res.data);
       } catch (err) {
         alert("Failed to load dropdowns.");
@@ -128,7 +128,7 @@ const ComicBookCalculator = () => {
       const fetchBindings = async () => {
         try {
           setLoadingBindings(true);
-          const res = await axios.get(`${API_BASE}/api/comicbook/bindings/`, {
+          const res = await axios.get(`${API_BASE}api/comicbook/bindings/`, {
             params: { trim_size_id, page_count }
           });
           setBindings(res.data || []);
@@ -169,7 +169,7 @@ const ComicBookCalculator = () => {
     }
     try {
       setCalculating(true);
-      const res = await axios.post(`${API_BASE}/api/comicbook/calculate/`, form);
+      const res = await axios.post(`${API_BASE}api/comicbook/calculate/`, form);
       setResult(res.data);
     } catch (err) {
       alert("Calculation failed.");
