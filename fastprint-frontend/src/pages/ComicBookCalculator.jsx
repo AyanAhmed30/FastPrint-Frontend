@@ -109,7 +109,8 @@ const ComicBookCalculator = () => {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const res = await axios.get(`${API_BASE}api/comicbook/dropdowns/`);
+const safeURL = `${API_BASE}api/comicbook/dropdowns/`.replace(/([^:]\/)\/+/g, "$1");
+const res = await axios.get(safeURL);
         setDropdowns(res.data);
       } catch (err) {
         alert("Failed to load dropdowns.");
@@ -169,7 +170,8 @@ const ComicBookCalculator = () => {
     }
     try {
       setCalculating(true);
-      const res = await axios.post(`${API_BASE}api/comicbook/calculate/`, form);
+const safeURL = `${API_BASE}api/comicbook/calculate/`.replace(/([^:]\/)\/+/g, "$1");
+const res = await axios.post(safeURL, form);
       setResult(res.data);
     } catch (err) {
       alert("Calculation failed.");
