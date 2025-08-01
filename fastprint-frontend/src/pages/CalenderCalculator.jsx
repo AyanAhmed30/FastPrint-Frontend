@@ -87,7 +87,7 @@ const CalendarCalculator = () => {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE}/api/calender/dropdowns/`)
+      .get(`${API_BASE}api/calender/dropdowns/`)
       .then(res => setDropdowns(res.data))
       .catch(() => alert('Failed to load dropdowns'))
       .finally(() => setLoading(false));
@@ -103,7 +103,7 @@ const CalendarCalculator = () => {
     e.preventDefault();
     setCalculating(true);
     try {
-      const res = await axios.post(`${API_BASE}/api/calender/calculate/`, form);
+      const res = await axios.post(`${API_BASE}api/calender/calculate/`, form);
       setResult(res.data);
     } catch (err) {
       alert('Calculation failed');
