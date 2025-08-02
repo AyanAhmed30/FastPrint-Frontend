@@ -105,7 +105,7 @@ const Home = () => {
                 fontWeight: 500,
               }}
             >
-              Get an Instant Quote Now
+              Get an Instant Quote Now please chl ja 
             </button>
 
             <h3
