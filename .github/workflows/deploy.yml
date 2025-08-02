@@ -3,7 +3,7 @@ name: 🚀 Deploy Frontend to EC2
 on:
   push:
     branches:
-      - main  # Change if you're using a different deployment branch
+      - main  # or your frontend deployment branch
 
 jobs:
   deploy:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇ Checkout Code
+      - name: ⬇️ Checkout Code
         uses: actions/checkout@v4
 
       - name: 📦 Set up SSH Key
@@ -20,17 +20,13 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: 📤 Copy Frontend Code to EC2 via rsync
-        run: |
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@${{ secrets.EC2_HOST }}:~/frontend/FastPrint-Frontend/fastprint-frontend
-
       - name: 🚀 SSH into EC2 and Deploy Frontend
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd ~/frontend/FastPrint-Frontend/fastprint-frontend
+            cd ~/FastPrint-Frontend/fastprint-frontend  # adjust if path is different
+            git pull origin main
             docker stop fastprint-frontend || true
             docker rm fastprint-frontend || true
-            docker build --no-cache -t fastprint-frontend .
+            docker build -t fastprint-frontend .
             docker run -d --name fastprint-frontend -p 4173:4173 fastprint-frontend
           EOF
