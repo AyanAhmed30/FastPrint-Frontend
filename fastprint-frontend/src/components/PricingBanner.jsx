@@ -13,7 +13,7 @@ const PricingBanner = () => {
       {/* Left Content */}
       <div className="w-full md:w-1/2 text-white text-center md:text-left mb-6 md:mb-0">
         <h2 className="text-[28px] sm:text-[36px] md:text-[50px] font-bold leading-tight mb-3">
-          Pricing <span className="text-[#F8C20A]">Calculator</span>
+          pricing <span className="text-[#F8C20A]">Calculator</span>
         </h2>
         <p className="text-sm sm:text-base leading-relaxed px-2 md:px-0">
           Calculate your book's printing costs, see distribution options, estimate potential earnings, and
