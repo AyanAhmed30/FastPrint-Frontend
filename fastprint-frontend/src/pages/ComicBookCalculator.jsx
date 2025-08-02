@@ -115,6 +115,7 @@ const ComicBookCalculator = () => {
 // console.log(API_BASE)
 // const res = await axios.get(`${API_BASE}api/calculator/dropdowns/`);
 const res = await axios.get(`${API_BASE}api/comicbook/dropdowns/`);
+console.log(API_BASE)
 
         setDropdowns(res.data);
       } catch (err) {
