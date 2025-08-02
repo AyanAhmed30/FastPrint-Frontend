@@ -57,7 +57,7 @@ const Footer = () => {
           <div className="flex items-center gap-3 mt-4">
             <FaPhoneAlt />
             <span>
-+1 469-277-7489</span>
++1 469-277-7489 </span>
           </div>
 
           {/* Location */}
