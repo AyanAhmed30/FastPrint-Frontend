@@ -2,6 +2,7 @@ import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AdminHeader from "../components/AdminHeader";
 import Footer from "../components/Footer";
+import BASE_URL from "../services/baseURL";
 import {
   ArrowLeft, User, Calendar, BookOpen, FileText, ImageIcon, 
   Palette, Layers, Package, Globe, Download, Eye, Info
@@ -74,11 +75,11 @@ const OrderInfo = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <a href={`http://localhost:8000${file}`} target="_blank" rel="noopener noreferrer"
+            <a href={`${BASE_URL.replace(/\/$/, '')}${file}`} target="_blank" rel="noopener noreferrer"
                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
               <Eye className="w-4 h-4" />View
             </a>
-            <a href={`http://localhost:8000${file}`} download
+            <a href={`${BASE_URL.replace(/\/$/, '')}${file}`} download
                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
               <Download className="w-4 h-4" />Download
             </a>
