@@ -2,7 +2,6 @@ name: 🚀 Deploy Frontend to EC2
 
 on:
   push:
-  
     branches:
       - main  # or your frontend deployment branch
 
@@ -21,13 +20,70 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-      - name: 🚀 SSH into EC2 and Deploy Frontend
+
+      - name: 🚀 Deploy Frontend with Nginx Integration
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd ~/FastPrint-Frontend/fastprint-frontend  # adjust if path is different
+            cd ~/frontend/FastPrint-Frontend/fastprint-frontend/fastprint-frontend
+            
+            # Pull latest changes
             git pull origin main
-            docker stop fastprint-frontend || true
-            docker rm fastprint-frontend || true
+            
+            # Stop existing frontend container gracefully
+            docker stop fastprint-frontend 2>/dev/null || true
+            docker rm fastprint-frontend 2>/dev/null || true
+            
+            # Build new frontend image
             docker build -t fastprint-frontend .
-            docker run -d --name fastprint-frontend -p 4173:4173 fastprint-frontend
+            
+            # Start new frontend container on port 3000 (as expected by Nginx)
+            # This matches the upstream configuration in Nginx
+            docker run -d --name fastprint-frontend -p 3000:80 fastprint-frontend
+            
+            # Wait for container to be ready
+            sleep 10
+          EOF
+
+      - name: ✅ Validate Frontend Deployment
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            # Check if frontend container is running
+            if ! docker ps | grep -q "fastprint-frontend.*Up"; then
+              echo "❌ Frontend container is not running"
+              docker logs fastprint-frontend
+              exit 1
+            fi
+            
+            # Check if frontend is responding on port 3000
+            if ! curl -f http://localhost:3000/ > /dev/null 2>&1; then
+              echo "❌ Frontend is not responding on port 3000"
+              docker logs fastprint-frontend
+              exit 1
+            fi
+            
+            # Check if frontend is accessible through Nginx (if SSL is configured)
+            if curl -f https://app.fastprintguys.com/ > /dev/null 2>&1; then
+              echo "✅ Frontend is accessible through Nginx with HTTPS"
+            elif curl -f http://app.fastprintguys.com/ > /dev/null 2>&1; then
+              echo "✅ Frontend is accessible through Nginx with HTTP"
+            else
+              echo "⚠️ Frontend may not be accessible through Nginx - check configuration"
+            fi
+            
+            echo "✅ Frontend deployment validation completed"
+          EOF
+
+      - name: 🔄 Reload Nginx Configuration
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            # Validate Nginx configuration
+            if sudo nginx -t; then
+              echo "✅ Nginx configuration is valid"
+              # Reload Nginx to ensure it picks up any changes
+              sudo systemctl reload nginx
+              echo "✅ Nginx reloaded successfully"
+            else
+              echo "❌ Nginx configuration validation failed"
+              exit 1
+            fi
           EOF
