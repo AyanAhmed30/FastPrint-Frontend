@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import BASE_URL from '../../services/baseURL';
 
-const API_BASE = 'http://localhost:8000'; // ✅ your Django backend URL
+// Use environment variable for API base URL (supports both development and production)
+const API_BASE = BASE_URL.replace(/\/$/, ''); // Remove trailing slash if present
 
 const PrintBookCalculator = () => {
   const [dropdowns, setDropdowns] = useState({});
