@@ -29,7 +29,7 @@ jobs:
             echo "🚀 Starting Frontend Deployment..."
             
             # Navigate to the correct frontend directory
-            FRONTEND_DIR="$HOME/FastPrint-Frontend"
+            FRONTEND_DIR="$HOME/frontend"
             if [ ! -d "$FRONTEND_DIR" ]; then
               echo "❌ Frontend directory not found at $FRONTEND_DIR"
               echo "📁 Available directories in home:"
@@ -39,14 +39,26 @@ jobs:
             
             cd "$FRONTEND_DIR"
             echo "📍 Current directory: $(pwd)"
+            echo "📁 Contents of frontend directory:"
+            ls -la
+            
+            # Check if we need to navigate further
+            if [ -d "FastPrint-Frontend" ]; then
+              cd FastPrint-Frontend
+              echo "📍 Navigated to: $(pwd)"
+            fi
             
             # Pull latest changes
             echo "📥 Pulling latest changes..."
             git pull origin main
             
-            # Navigate to the actual frontend app directory
-            cd fastprint-frontend
-            echo "📍 Frontend app directory: $(pwd)"
+            # Navigate to the actual frontend app directory if it exists
+            if [ -d "fastprint-frontend" ]; then
+              cd fastprint-frontend
+              echo "📍 Frontend app directory: $(pwd)"
+            else
+              echo "📍 Using current directory as frontend app: $(pwd)"
+            fi
             
             # Stop existing frontend container gracefully
             echo "🛑 Stopping existing frontend container..."
