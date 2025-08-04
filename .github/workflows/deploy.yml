@@ -24,24 +24,59 @@ jobs:
       - name: 🚀 Deploy Frontend with Nginx Integration
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd ~/frontend/FastPrint-Frontend/fastprint-frontend/fastprint-frontend
+            set -e  # Exit on any error
+            
+            echo "🚀 Starting Frontend Deployment..."
+            
+            # Navigate to the correct frontend directory
+            FRONTEND_DIR="$HOME/FastPrint-Frontend"
+            if [ ! -d "$FRONTEND_DIR" ]; then
+              echo "❌ Frontend directory not found at $FRONTEND_DIR"
+              echo "📁 Available directories in home:"
+              ls -la $HOME/
+              exit 1
+            fi
+            
+            cd "$FRONTEND_DIR"
+            echo "📍 Current directory: $(pwd)"
             
             # Pull latest changes
+            echo "📥 Pulling latest changes..."
             git pull origin main
             
+            # Navigate to the actual frontend app directory
+            cd fastprint-frontend
+            echo "📍 Frontend app directory: $(pwd)"
+            
             # Stop existing frontend container gracefully
-            docker stop fastprint-frontend 2>/dev/null || true
-            docker rm fastprint-frontend 2>/dev/null || true
+            echo "🛑 Stopping existing frontend container..."
+            docker stop fastprint-frontend 2>/dev/null || echo "No existing container to stop"
+            docker rm fastprint-frontend 2>/dev/null || echo "No existing container to remove"
             
             # Build new frontend image
+            echo "🔨 Building frontend Docker image..."
             docker build -t fastprint-frontend .
             
             # Start new frontend container on port 3000 (as expected by Nginx)
-            # This matches the upstream configuration in Nginx
+            echo "🚀 Starting frontend container..."
             docker run -d --name fastprint-frontend -p 3000:80 fastprint-frontend
             
             # Wait for container to be ready
+            echo "⏳ Waiting for frontend to be ready..."
             sleep 10
+            
+            # Health check
+            echo "🔍 Performing health check..."
+            if curl -f http://localhost:3000/ > /dev/null 2>&1; then
+              echo "✅ Frontend is running and accessible on port 3000"
+            else
+              echo "❌ Frontend health check failed"
+              echo "📋 Container logs:"
+              docker logs fastprint-frontend --tail 20
+              exit 1
+            fi
+            
+            echo "🎉 Frontend deployment completed successfully!"
           EOF
 
       - name: ✅ Validate Frontend Deployment
