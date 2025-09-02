@@ -283,7 +283,7 @@ const deliveryHandler = async () => {
             {/* Calculate Rate */}
             <button className={`${buttonClass} mb-3 ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#44c6ff] to-[#1786ff] hover:from-[#3bb5ff] hover:to-[#0f75ff]'}`}
               onClick={fetchShippingRate} disabled={isLoading}>
-              {isLoading ? 'Calculating...' : 'Calculate Shipping Rate (DHL & FedEx)'}
+              {isLoading ? 'Calculating...' : 'Calculate Shipping Rate '}
             </button>
 
             {/* Available Services */}
